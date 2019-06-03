@@ -17,11 +17,11 @@ public class Board : MonoBehaviour
     public GameObject tilePrefab;//타일 프리펩
     private BackgroundTile[,] allTiles;//타일수
     public GameObject[] beads;
+    public GameObject destroyEffect;
     public GameObject[,] allBeads;
     private FindMatches findMatches;
 
     //test
-    public GameObject ResetBtnobj;
     private ResetBtn m_resetBtn;
 
     // Start is called before the first frame update
@@ -127,6 +127,7 @@ public class Board : MonoBehaviour
         if(allBeads[_column, _row].GetComponent<Bead>().isMatched)
         {
             findMatches.currentMatches.Remove(allBeads[_column, _row]);
+            Instantiate(destroyEffect, allBeads[_column, _row].transform.position, Quaternion.identity);
             Destroy(allBeads[_column, _row]);
             allBeads[_column, _row] = null;
         }
