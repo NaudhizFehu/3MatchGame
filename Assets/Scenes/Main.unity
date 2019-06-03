@@ -239,7 +239,7 @@ MonoBehaviour:
   - {fileID: 3236696590859061685, guid: 7bf5d7c0f48c73e4094f45d7c98f092b, type: 3}
   - {fileID: 2292940751247509198, guid: 1f9bbc0179cf0f64d95e2563db7bb3dc, type: 3}
   - {fileID: 3323003495702451026, guid: 42e6c374084845f469ffa55226df8cc5, type: 3}
-  destroyEffect: {fileID: 6258264928816019186, guid: f67f7de82a3095142a8467788cbec13b,
+  destroyEffect: {fileID: 5676266399695965585, guid: 4875a01019c1ba040ae4aca6cc177e11,
     type: 3}
 --- !u!4 &1216100271
 Transform:

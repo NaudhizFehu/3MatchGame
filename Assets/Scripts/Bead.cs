@@ -21,6 +21,7 @@ public class Bead : MonoBehaviour
     private Vector2 tempPosition;
     public float swipeAngle = 0;
     public float swipeResist = 1f;
+    
 
     // Start is called before the first frame update
     void Start()
@@ -42,7 +43,7 @@ public class Bead : MonoBehaviour
         if(isMatched)
         {
             SpriteRenderer mySprite = GetComponent<SpriteRenderer>();
-            //mySprite.color = new Color(0f, 0f, 0f, 0.2f);
+            mySprite.color = new Color(1f, 1f, 1f, 0.2f);
         }
 
         targetX = column;

@@ -127,10 +127,24 @@ public class Board : MonoBehaviour
         if(allBeads[_column, _row].GetComponent<Bead>().isMatched)
         {
             findMatches.currentMatches.Remove(allBeads[_column, _row]);
-            Instantiate(destroyEffect, allBeads[_column, _row].transform.position, Quaternion.identity);
+            GameObject Eff = Instantiate(destroyEffect, allBeads[_column, _row].transform.position + Define.FrontPos, Quaternion.identity);
+            Eff.GetComponent<ParticleSystemRenderer>().material = Resources.Load(Define.destroyEffPath[BeadColorIndex(allBeads[_column, _row].tag)]) as Material;
+            Destroy(Eff, 1f);
             Destroy(allBeads[_column, _row]);
             allBeads[_column, _row] = null;
         }
+    }
+
+    private int BeadColorIndex(string _tag)
+    {
+        for(int i = 0; i < beads.Length; i++)
+        {
+            if(_tag == beads[i].tag)
+            {
+                return i;
+            }
+        }
+        return 0;
     }
 
 
@@ -221,7 +235,7 @@ public class Board : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
             DestroyMatches();
         }
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(1f);
         currentState = GameState.move;
     }
 
