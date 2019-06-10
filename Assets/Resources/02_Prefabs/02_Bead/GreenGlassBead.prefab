@@ -100,13 +100,22 @@ MonoBehaviour:
   targetX: 0
   targetY: 0
   isMatched: 0
+  otherBead: {fileID: 0}
   swipeAngle: 0
   swipeResist: 1
+  direction: 0
+  isColorBomb: 0
   isColumnBomb: 0
   isRowBomb: 0
+  isAdjacentBomb: 0
   rowArrow: {fileID: 824254215943130947, guid: e82d08adbe8e3454bb0ace8836dcdff9, type: 3}
   columnArrow: {fileID: 6491157687517123239, guid: 942325026f438ee43a82b10ee46c9639,
     type: 3}
+  colorBomb: {fileID: 3343186529235273640, guid: 329f8aeb086a852478888d197b5f6a27,
+    type: 3}
+  adjacentBomb: {fileID: 451852422219316389, guid: c093e8fefe9a0894099525067f772e0d,
+    type: 3}
+  nArrow: 0
 --- !u!58 &9170025936794447841
 CircleCollider2D:
   m_ObjectHideFlags: 0

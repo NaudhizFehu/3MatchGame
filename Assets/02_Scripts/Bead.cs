@@ -2,6 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum BeadMoveDirection
+{
+    None = 0,
+    Right,
+    Up,
+    Left,
+    Down,
+}
+
+public enum BombType
+{
+    Row = 0,
+    Column,
+    Color,
+    Adjacent,
+}
+
 public class Bead : MonoBehaviour
 {
     [Header("Board Variables")]
@@ -24,13 +41,18 @@ public class Bead : MonoBehaviour
     [Header("Swipe Stuff")]
     public float swipeAngle = 0;
     public float swipeResist = 1f;
+    public BeadMoveDirection direction;
 
     [Header("Powerup Stuff")]
+    public bool isColorBomb;
     public bool isColumnBomb;
     public bool isRowBomb;
+    public bool isAdjacentBomb;
     public GameObject rowArrow;
     public GameObject columnArrow;
     private GameObject arrow;
+    public GameObject colorBomb;
+    public GameObject adjacentBomb;
 
     //test
     public int nArrow = 0;
@@ -40,6 +62,10 @@ public class Bead : MonoBehaviour
     {
         isColumnBomb = false;
         isRowBomb = false;
+        isColorBomb = false;
+        isAdjacentBomb = false;
+
+        direction = BeadMoveDirection.None;
 
         board = FindObjectOfType<Board>();
         findMatches = FindObjectOfType<FindMatches>();
@@ -57,7 +83,7 @@ public class Bead : MonoBehaviour
         if(Input.GetMouseButtonDown(1))
         {
             nArrow++;
-            if (nArrow > 2) nArrow = 0;
+            if (nArrow > 4) nArrow = 0;
             //nArrow = nArrow > 2 ? 0 : nArrow++;
 
             GameObject originalObj = null;
@@ -71,19 +97,41 @@ public class Bead : MonoBehaviour
                 case 0:
                     isRowBomb = false;
                     isColumnBomb = false;
+                    isColorBomb = false;
+                    isAdjacentBomb = false;
                     originalObj = null;
                     break;
 
                 case 1:
                     isRowBomb = true;
                     isColumnBomb = false;
+                    isColorBomb = false;
+                    isAdjacentBomb = false;
                     originalObj = rowArrow;
                     break;
 
                 case 2:
                     isRowBomb = false;
                     isColumnBomb = true;
+                    isColorBomb = false;
+                    isAdjacentBomb = false;
                     originalObj = columnArrow;
+                    break;
+
+                case 3:
+                    isRowBomb = false;
+                    isColumnBomb = false;
+                    isColorBomb = true;
+                    isAdjacentBomb = false;
+                    originalObj = colorBomb;
+                    break;
+
+                case 4:
+                    isRowBomb = false;
+                    isColumnBomb = false;
+                    isColorBomb = false;
+                    isAdjacentBomb = true;
+                    originalObj = adjacentBomb;
                     break;
             }
 
@@ -147,6 +195,19 @@ public class Bead : MonoBehaviour
 
     public IEnumerator CheckMoveCo()
     {
+        //섞은 구슬과 같은 색의 구슬을 모두 제거함
+        if(isColorBomb)
+        {
+            //This piece is a color bomb, and the other piece is the color to destroy
+            findMatches.MatchPiecesOfColor(otherBead.tag);
+            isMatched = true;
+        }
+        else if(otherBead.GetComponent<Bead>().isColorBomb)
+        {
+            //The other piece is a color bomb, and this piece has the color to destroy
+            findMatches.MatchPiecesOfColor(this.gameObject.tag);
+            otherBead.GetComponent<Bead>().isMatched = true;
+        }
         yield return new WaitForSeconds(0.5f);
         if(otherBead != null)
         {
@@ -158,6 +219,8 @@ public class Bead : MonoBehaviour
                 column = previousColumn;
                 row = previousRow;
                 yield return new WaitForSeconds(0.5f);
+                direction = BeadMoveDirection.None;
+                otherBead.GetComponent<Bead>().direction = BeadMoveDirection.None;
                 board.currentBead = null;
                 board.currentState = GameState.move;
             }
@@ -214,6 +277,8 @@ public class Bead : MonoBehaviour
             previousRow = row;
             otherBead.GetComponent<Bead>().column -= 1;
             column += 1;
+            direction = BeadMoveDirection.Right;
+            otherBead.GetComponent<Bead>().direction = BeadMoveDirection.Left;
         }
         else if (swipeAngle > 45 && swipeAngle <= 135 && row < board.height - 1)
         {
@@ -223,6 +288,8 @@ public class Bead : MonoBehaviour
             previousRow = row;
             otherBead.GetComponent<Bead>().row -= 1;
             row += 1;
+            direction = BeadMoveDirection.Up;
+            otherBead.GetComponent<Bead>().direction = BeadMoveDirection.Down;
         }
         else if ((swipeAngle > 135 || swipeAngle <= -135) && column > 0)
         {
@@ -232,6 +299,8 @@ public class Bead : MonoBehaviour
             previousRow = row;
             otherBead.GetComponent<Bead>().column += 1;
             column -= 1;
+            direction = BeadMoveDirection.Left;
+            otherBead.GetComponent<Bead>().direction = BeadMoveDirection.Right;
         }
         else if (swipeAngle < -45 && swipeAngle >= -135 && row > 0)
         {
@@ -241,6 +310,8 @@ public class Bead : MonoBehaviour
             previousRow = row;
             otherBead.GetComponent<Bead>().row += 1;
             row -= 1;
+            direction = BeadMoveDirection.Down;
+            otherBead.GetComponent<Bead>().direction = BeadMoveDirection.Up;
         }
         StartCoroutine(CheckMoveCo());
     }
@@ -279,16 +350,33 @@ public class Bead : MonoBehaviour
         }
     }
 
-    public void MakeRowBomb()
+    public void MakeBomb(BombType _type)
     {
-        isRowBomb = true;
-        GameObject bomb = Instantiate(rowArrow, transform.position, Quaternion.identity);
-        bomb.transform.parent = this.transform;
-    }
-    public void MakeColumnBomb()
-    {
-        isColumnBomb = true;
-        GameObject bomb = Instantiate(columnArrow, transform.position, Quaternion.identity);
+        GameObject createBombObj = null;
+        switch(_type)
+        {
+            case BombType.Row:
+                isRowBomb = true;
+                createBombObj = rowArrow;
+                break;
+
+            case BombType.Column:
+                isColumnBomb = true;
+                createBombObj = columnArrow;
+                break;
+
+            case BombType.Color:
+                isColorBomb = true;
+                createBombObj = colorBomb;
+                this.tag = "NonNormalBead";
+                break;
+
+            case BombType.Adjacent:
+                isAdjacentBomb = true;
+                createBombObj = adjacentBomb;
+                break;
+        }
+        GameObject bomb = Instantiate(createBombObj, transform.position, Quaternion.identity);
         bomb.transform.parent = this.transform;
     }
 }

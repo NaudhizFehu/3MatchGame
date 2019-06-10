@@ -36,6 +36,14 @@ public class Board : MonoBehaviour
 
     }
 
+    private void LateUpdate()
+    {
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
+    }
+
     private ResetBtn makeResetBtn()
     {
         GameObject btn = Instantiate(Resources.Load(string.Format("02_Prefabs/03_UI/ResetBtn"))) as GameObject;
@@ -122,17 +130,132 @@ public class Board : MonoBehaviour
         return false;
     }
 
+    private bool ColumnOrRow()
+    {
+        int numberHorizontal = 0;
+        int numberVertical = 0;
+        Bead firstPiece = findMatches.currentMatches[0].GetComponent<Bead>();
+        if(firstPiece != null)
+        {
+            foreach(GameObject currentPiece in findMatches.currentMatches)
+            {
+                Bead bead = currentPiece.GetComponent<Bead>();
+                if(bead.row == firstPiece.row)
+                {
+                    numberHorizontal++;
+                }
+                if(bead.column == firstPiece.column)
+                {
+                    numberVertical++;
+                }
+            }
+        }
+
+        return (numberHorizontal == 5 || numberVertical == 5);
+    }
+
+    private void CheckToMakeBombs()
+    {
+        //Column, Row Bomb
+        if(findMatches.currentMatches.Count == 4 || findMatches.currentMatches.Count == 7)
+        {
+            findMatches.CheckBombs();
+        }
+
+        //Color, Adjacent Bomb
+        if(findMatches.currentMatches.Count == 5 || findMatches.currentMatches.Count == 8)
+        {
+            if(ColumnOrRow())
+            {
+                //make Color Bomb
+                //is the current bead matched?
+                if(currentBead != null)
+                {
+                    if(currentBead.isMatched)
+                    {
+                        if(!currentBead.isColorBomb)
+                        {
+                            currentBead.isMatched = false;
+                            currentBead.MakeBomb(BombType.Color);
+                        }
+                    }
+                    else
+                    {
+                        if(currentBead.otherBead != null)
+                        {
+                            Bead otherBead = currentBead.otherBead.GetComponent<Bead>();
+                            if(otherBead.isMatched)
+                            {
+                                if (!otherBead.isColorBomb)
+                                {
+                                    otherBead.isMatched = false;
+                                    otherBead.MakeBomb(BombType.Color);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                //make Adjacent Bomb
+                //is the current bead matched?
+                if (currentBead != null)
+                {
+                    if (currentBead.isMatched)
+                    {
+                        if (!currentBead.isAdjacentBomb)
+                        {
+                            currentBead.isMatched = false;
+                            currentBead.MakeBomb(BombType.Adjacent);
+                        }
+                    }
+                    else
+                    {
+                        if (currentBead.otherBead != null)
+                        {
+                            Bead otherBead = currentBead.otherBead.GetComponent<Bead>();
+                            if(otherBead.isMatched)
+                            {
+                                if (!otherBead.isAdjacentBomb)
+                                {
+                                    otherBead.isMatched = false;
+                                    otherBead.MakeBomb(BombType.Adjacent);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     //매치가 되었을때 해당 구슬을 제거한다.
     private void DestroyMatchesAt(int _column, int _row)
     {
         if(allBeads[_column, _row].GetComponent<Bead>().isMatched)
         {
             //How many elements ard in the matched pieces list from findmatches?
-            if(findMatches.currentMatches.Count == 4 || findMatches.currentMatches.Count == 7)
+            //var enumerator = findMatches.Dic_currentMatches.GetEnumerator();
+            //while (enumerator.MoveNext())
+            //{
+            //    if (enumerator.Current.Value.Count == 4 || enumerator.Current.Value.Count == 7)
+            //    {
+            //        findMatches.CheckBombs();
+            //    }
+            //    enumerator.Current.Value.Clear();
+            //}
+
+            if(findMatches.currentMatches.Count >= 4)
             {
-                findMatches.CheckBombs();
+                CheckToMakeBombs();
             }
-            findMatches.currentMatches.Remove(allBeads[_column, _row]);
+
+            //if (findMatches.currentMatches.Count == 5 || findMatches.currentMatches.Count == 8)
+            //{
+            //    findMatches.CheckBombs();
+            //}
+
             GameObject Eff = Instantiate(destroyEffect, allBeads[_column, _row].transform.position + Define.FrontPos, Quaternion.identity);
             Eff.GetComponent<ParticleSystemRenderer>().material = Resources.Load(Define.destroyEffPath[BeadColorIndex(allBeads[_column, _row].tag)]) as Material;
             Destroy(Eff, 1f);
@@ -166,6 +289,7 @@ public class Board : MonoBehaviour
                 }
             }
         }
+        findMatches.currentMatches.Clear();
         StartCoroutine(DecreaseRowCo());
     }
 
@@ -241,6 +365,8 @@ public class Board : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
             DestroyMatches();
         }
+        findMatches.currentMatches.Clear();
+        currentBead = null;
         yield return new WaitForSeconds(1f);
         currentState = GameState.move;
     }
