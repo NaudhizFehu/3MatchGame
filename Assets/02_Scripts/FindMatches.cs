@@ -234,16 +234,17 @@ public class FindMatches : MonoBehaviour
                 board.currentBead.isMatched = false;
 
                 //Decide what kind of bomb to make
-                board.currentBead.MakeBomb(board.currentBead.direction == BeadMoveDirection.Right || board.currentBead.direction == BeadMoveDirection.Left ? BombType.Row : BombType.Column);
+                //board.currentBead.MakeBomb(board.currentBead.direction == BeadMoveDirection.Right || board.currentBead.direction == BeadMoveDirection.Left ? BombType.Row : BombType.Column);
 
-                //if(board.currentBead.direction == BeadMoveDirection.Right || board.currentBead.direction == BeadMoveDirection.Left)
-                //{
-                //    board.currentBead.MakeBomb(BombType.Row);
-                //}
-                //else if(board.currentBead.direction != BeadMoveDirection.None)
-                //{
-                //    board.currentBead.MakeBomb(BombType.Column);
-                //}
+                if((board.currentBead.swipeAngle > -45 && board.currentBead.swipeAngle <= 45) ||
+                    (board.currentBead.swipeAngle < -135 || board.currentBead.swipeAngle >= 135))
+                {
+                    board.currentBead.MakeBomb(BombType.Row);
+                }
+                else
+                {
+                    board.currentBead.MakeBomb(BombType.Column);
+                }
             }
             //Is the other piece matched?
             else if(board.currentBead.otherBead != null)
@@ -255,16 +256,17 @@ public class FindMatches : MonoBehaviour
                     //Make it unmatched
                     otherBead.isMatched = false;
                     //Decide what kind of bomb to make
-                    otherBead.MakeBomb(otherBead.direction == BeadMoveDirection.Right || otherBead.direction == BeadMoveDirection.Left ? BombType.Row : BombType.Column);
+                    //otherBead.MakeBomb(otherBead.direction == BeadMoveDirection.Right || otherBead.direction == BeadMoveDirection.Left ? BombType.Row : BombType.Column);
 
-                    //if (otherBead.direction == BeadMoveDirection.Right || otherBead.direction == BeadMoveDirection.Left)
-                    //{
-                    //    otherBead.MakeRowBomb();
-                    //}
-                    //else if (otherBead.direction != BeadMoveDirection.None)
-                    //{
-                    //    otherBead.MakeColumnBomb();
-                    //}
+                    if ((board.currentBead.swipeAngle > -45 && board.currentBead.swipeAngle <= 45) ||
+                    (board.currentBead.swipeAngle < -135 || board.currentBead.swipeAngle >= 135))
+                    {
+                        otherBead.MakeBomb(BombType.Row);
+                    }
+                    else
+                    {
+                        otherBead.MakeBomb(BombType.Column);
+                    }
                 }
             }
         }

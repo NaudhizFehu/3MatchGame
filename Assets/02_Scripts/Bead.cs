@@ -54,6 +54,8 @@ public class Bead : MonoBehaviour
     public GameObject colorBomb;
     public GameObject adjacentBomb;
 
+    private GameObject bomb;
+
     //test
     public int nArrow = 0;
 
@@ -256,9 +258,9 @@ public class Bead : MonoBehaviour
         if(Mathf.Abs(finalTouchPosition.y - firstTouchPosition.y) > swipeResist ||
             Mathf.Abs(finalTouchPosition.x - firstTouchPosition.x) > swipeResist)
         {
+            board.currentState = GameState.wait;//외부로 드래그할 시 생기는 버그 Fix
             swipeAngle = Mathf.Atan2(finalTouchPosition.y - firstTouchPosition.y, finalTouchPosition.x - firstTouchPosition.x) * 180 / Mathf.PI;
             MovePieces();
-            board.currentState = GameState.wait;
             board.currentBead = this;
         }
         else
@@ -267,53 +269,59 @@ public class Bead : MonoBehaviour
         }
     }
 
+    //MovePieces함수 리팩토링
+    private void MovePiecesActual(Vector2 _direction)
+    {
+        otherBead = board.allBeads[column + (int)_direction.x, row + (int)_direction.y];
+        previousColumn = column;
+        previousRow = row;
+        otherBead.GetComponent<Bead>().column += -1 * (int)_direction.x;
+        otherBead.GetComponent<Bead>().row += -1 * (int)_direction.y;
+        column += (int)_direction.x;
+        row += (int)_direction.y;
+        StartCoroutine(CheckMoveCo());
+    }
+
     private void MovePieces()
     {
         if(swipeAngle > -45 && swipeAngle <= 45 && column < board.width - 1)
         {
             //Right Swipe
-            otherBead = board.allBeads[column + 1, row];
-            previousColumn = column;
-            previousRow = row;
-            otherBead.GetComponent<Bead>().column -= 1;
-            column += 1;
-            direction = BeadMoveDirection.Right;
-            otherBead.GetComponent<Bead>().direction = BeadMoveDirection.Left;
+            //otherBead = board.allBeads[column + 1, row];
+            //previousColumn = column;
+            //previousRow = row;
+            //otherBead.GetComponent<Bead>().column -= 1;
+            //column += 1;
+            ////direction = BeadMoveDirection.Right;
+            ////otherBead.GetComponent<Bead>().direction = BeadMoveDirection.Left;
+            //StartCoroutine(CheckMoveCo());
+            MovePiecesActual(Vector2.right);
         }
         else if (swipeAngle > 45 && swipeAngle <= 135 && row < board.height - 1)
         {
             //Up Swipe
-            otherBead = board.allBeads[column, row + 1];
-            previousColumn = column;
-            previousRow = row;
-            otherBead.GetComponent<Bead>().row -= 1;
-            row += 1;
-            direction = BeadMoveDirection.Up;
-            otherBead.GetComponent<Bead>().direction = BeadMoveDirection.Down;
+            MovePiecesActual(Vector2.up);
+            //direction = BeadMoveDirection.Up;
+            //otherBead.GetComponent<Bead>().direction = BeadMoveDirection.Down;
         }
         else if ((swipeAngle > 135 || swipeAngle <= -135) && column > 0)
         {
             //Left Swipe
-            otherBead = board.allBeads[column - 1, row];
-            previousColumn = column;
-            previousRow = row;
-            otherBead.GetComponent<Bead>().column += 1;
-            column -= 1;
-            direction = BeadMoveDirection.Left;
-            otherBead.GetComponent<Bead>().direction = BeadMoveDirection.Right;
+            MovePiecesActual(Vector2.left);
+            //direction = BeadMoveDirection.Left;
+            //otherBead.GetComponent<Bead>().direction = BeadMoveDirection.Right;
         }
         else if (swipeAngle < -45 && swipeAngle >= -135 && row > 0)
         {
             //Down Swipe
-            otherBead = board.allBeads[column, row - 1];
-            previousColumn = column;
-            previousRow = row;
-            otherBead.GetComponent<Bead>().row += 1;
-            row -= 1;
-            direction = BeadMoveDirection.Down;
-            otherBead.GetComponent<Bead>().direction = BeadMoveDirection.Up;
+            MovePiecesActual(Vector2.down);
+            //direction = BeadMoveDirection.Down;
+            //otherBead.GetComponent<Bead>().direction = BeadMoveDirection.Up;
         }
-        StartCoroutine(CheckMoveCo());
+        //else
+        //{
+            board.currentState = GameState.move;
+        //}
     }
 
     private void FindMatches()
@@ -353,6 +361,16 @@ public class Bead : MonoBehaviour
     public void MakeBomb(BombType _type)
     {
         GameObject createBombObj = null;
+        //폭탄 문양이 겹치지 않도록 초기화
+        if(bomb != null)
+        {
+            Destroy(bomb);
+            bomb = null;
+            isRowBomb = false;
+            isColumnBomb = false;
+            isColorBomb = false;
+            isAdjacentBomb = false;
+        }
         switch(_type)
         {
             case BombType.Row:
@@ -376,7 +394,7 @@ public class Bead : MonoBehaviour
                 createBombObj = adjacentBomb;
                 break;
         }
-        GameObject bomb = Instantiate(createBombObj, transform.position, Quaternion.identity);
+        bomb = Instantiate(createBombObj, transform.position, Quaternion.identity);
         bomb.transform.parent = this.transform;
     }
 }
