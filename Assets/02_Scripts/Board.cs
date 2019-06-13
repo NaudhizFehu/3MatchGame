@@ -462,12 +462,111 @@ public class Board : MonoBehaviour
         findMatches.currentMatches.Clear();
         currentBead = null;
         yield return new WaitForSeconds(1f);
+
+        if (isDeadlocked())
+        {
+            Debug.Log("Deadlocked!!!");
+        }
+
+        //매칭이 가능한 갯수 표기
+        //int remainderMatch = isDeadlocked();
+        //if (remainderMatch == 0)
+        //{
+        //    Debug.Log("Deadlocked!!!");
+        //}
+        //Debug.Log(string.Format("remainder match : {0}", remainderMatch));
         currentState = GameState.move;
     }
 
-    private void SwitchPieces(int _column, int row, Vector2 _direction)
+    private void SwitchPieces(int _column, int _row, Vector2 _direction)
     {
-        //Take the first piece and save it in a holder
+        //Take the second piece and save it in a holder
+        GameObject holder = allBeads[_column + (int)_direction.x, _row + (int)_direction.y] as GameObject;
+        //switching the first bead to be the second position
+        allBeads[_column + (int)_direction.x, _row + (int)_direction.y] = allBeads[_column, _row];
+        //Set the first bead to be the second bead
+        allBeads[_column, _row] = holder;
+    }
+
+    private bool CheckForMatches()
+    {
+        for(int i = 0; i < width; i++)
+        {
+            for(int j = 0; j < height; j++)
+            {
+                if(allBeads[i, j] != null)
+                {
+                    //Make sure that one and two to the right are in the board
+                    if(i < width - 2)
+                    {
+                        //Check if the beads to the rifht and two to the right exist
+                        if(allBeads[i + 1, j] != null && allBeads[i + 2, j] != null)
+                        {
+                            if(allBeads[i + 1, j].tag == allBeads[i, j].tag && allBeads[i + 2, j].tag == allBeads[i, j].tag)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+
+                    if(j < height - 2)
+                    {
+                        //Check if the beads above exist
+                        if (allBeads[i, j + 1] != null && allBeads[i, j + 2] != null)
+                        {
+                            if (allBeads[i, j + 1].tag == allBeads[i, j].tag && allBeads[i, j + 2].tag == allBeads[i, j].tag)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private bool SwitchAndCheck(int _column, int _row, Vector2 _direction)
+    {
+        SwitchPieces(_column, _row, _direction);
+        if(CheckForMatches())
+        {
+            SwitchPieces(_column, _row, _direction);
+            return true;
+        }
+        SwitchPieces(_column, _row, _direction);
+        return false;
+    }
+
+    private bool isDeadlocked()
+    {
+        for(int i = 0; i < width; i++)
+        {
+            for(int j = 0; j < height; j++)
+            {
+                if(allBeads[i,j] != null)
+                {
+                    if(i < width - 1)
+                    {
+                        if(SwitchAndCheck(i, j, Vector2.right))
+                        {
+                            //Matching++;
+                            return false;
+                        }
+                    }
+
+                    if(j < height - 1)
+                    {
+                        if(SwitchAndCheck(i, j, Vector2.up))
+                        {
+                            //Matching++;
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     //TestCode

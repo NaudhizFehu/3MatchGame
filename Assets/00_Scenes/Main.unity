@@ -241,55 +241,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentState: 1
-  width: 7
-  height: 10
+  width: 5
+  height: 5
   offSet: 15
   tilePrefab: {fileID: 8893047571085639210, guid: 0c3faec13042dde4da57dedcc8d40a33,
     type: 3}
   breakableTilePrefab: {fileID: 3319000025690863985, guid: 8db97d038a148864d884f0b3e9934cc2,
     type: 3}
-  boardLayout:
-  - x: 0
-    y: 0
-    tileKind: 1
-  - x: 6
-    y: 6
-    tileKind: 1
-  - x: 6
-    y: 0
-    tileKind: 1
-  - x: 0
-    y: 6
-    tileKind: 1
-  - x: 4
-    y: 4
-    tileKind: 1
-  - x: 5
-    y: 4
-    tileKind: 1
-  - x: 3
-    y: 4
-    tileKind: 1
-  - x: 2
-    y: 4
-    tileKind: 1
-  - x: 1
-    y: 4
-    tileKind: 1
-  - x: 1
-    y: 5
-    tileKind: 0
-  - x: 1
-    y: 6
-    tileKind: 0
-  - x: 1
-    y: 7
-    tileKind: 0
+  boardLayout: []
   beads:
   - {fileID: 6226497908887478945, guid: cbb46dd15ab34c64cbd6275957783302, type: 3}
   - {fileID: 5699286196061386284, guid: 9b736949a1327af4f99232ef9b033671, type: 3}
   - {fileID: 6344553330724717728, guid: de66cd8b30684a94c88461b9656f42cc, type: 3}
   - {fileID: 2635392914816838458, guid: 7d99171ca598dad4fbe839db5c5fc03a, type: 3}
+  - {fileID: 2749253793248419363, guid: 3236c6780ce858c42a453ed7e1dd46e5, type: 3}
+  - {fileID: 3236696590859061685, guid: 7bf5d7c0f48c73e4094f45d7c98f092b, type: 3}
+  - {fileID: 2292940751247509198, guid: 1f9bbc0179cf0f64d95e2563db7bb3dc, type: 3}
+  - {fileID: 3323003495702451026, guid: 42e6c374084845f469ffa55226df8cc5, type: 3}
   destroyEffect: {fileID: 5676266399695965585, guid: 4875a01019c1ba040ae4aca6cc177e11,
     type: 3}
   currentBead: {fileID: 0}
