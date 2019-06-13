@@ -126,6 +126,11 @@ public class Board : MonoBehaviour
                 }
             }
         }
+
+        if(isDeadlocked())
+        {
+            ShuffleBoard();
+        }
     }
 
     private void makeBeadSetup(int _column, int _row, Vector2 _pos)
@@ -453,19 +458,21 @@ public class Board : MonoBehaviour
     private IEnumerator FillBoardCo()
     {
         RefillBoard();
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(0.5f);
         while(MatchesOnBoard())
         {
-            yield return new WaitForSeconds(0.3f);
+            yield return new WaitForSeconds(0.5f);
             DestroyMatches();
         }
         findMatches.currentMatches.Clear();
         currentBead = null;
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
 
         if (isDeadlocked())
         {
-            Debug.Log("Deadlocked!!!");
+            ShuffleBoard();
+            string str = "<color=red>Deadlocked!!!</color>";
+            Debug.Log(str);
         }
 
         //매칭이 가능한 갯수 표기
@@ -567,6 +574,59 @@ public class Board : MonoBehaviour
             }
         }
         return true;
+    }
+
+    //DeadLock 발생시 셔플
+    private void ShuffleBoard()
+    {
+        //Create a list game objects
+        List<GameObject> newBoard = new List<GameObject>();
+        //Add every piece to this list
+        for(int i = 0; i < width; i++)
+        {
+            for(int j = 0; j < height; j++)
+            {
+                if(allBeads[i, j] != null)
+                {
+                    newBoard.Add(allBeads[i, j]);
+                }
+            }
+        }
+        //for every spot on the board
+        for(int i = 0; i < width; i++)
+        {
+            for(int j = 0; j < height; j++)
+            {
+                //if this spot shouldn't be blank
+                if(!blankSpaces[i,j])
+                {
+                    //Pick a random number
+                    int pieceToUse = Random.Range(0, newBoard.Count);
+                    int maxIterarions = 0;
+                    while (MatchesAt(i, j, newBoard[pieceToUse]) && maxIterarions < 100)
+                    {
+                        pieceToUse = Random.Range(0, newBoard.Count);
+                        maxIterarions++;
+                    }
+                    //Make a container for the piece
+                    maxIterarions = 0;
+                    Bead piece = newBoard[pieceToUse].GetComponent<Bead>();
+                    //Assign the column, row the piece
+                    piece.column = i;
+                    piece.row = j;
+                    //Fill in the beads array with this new piece
+                    allBeads[i, j] = newBoard[pieceToUse];
+                    //Remove it from the list
+                    newBoard.Remove(newBoard[pieceToUse]);
+                }
+            }
+        }
+
+        //Check if it's still deadlocked
+        if(isDeadlocked())
+        {
+            ShuffleBoard();
+        }
     }
 
     //TestCode
