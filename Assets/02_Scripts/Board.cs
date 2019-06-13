@@ -39,6 +39,9 @@ public class Board : MonoBehaviour
     public GameObject[,] allBeads;
     public Bead currentBead;
     private FindMatches findMatches;
+    public int basePieceValue = 20;
+    private int streakValue = 1;
+    private ScoreManager scoreManager;
 
     //test
     private ResetBtn m_resetBtn;
@@ -46,12 +49,13 @@ public class Board : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        scoreManager = FindObjectOfType<ScoreManager>();
         breakableTiles = new BackgroundTile[width, height];
         findMatches = FindObjectOfType<FindMatches>();
         blankSpaces = new bool[width, height];//타일 세팅
         allBeads = new GameObject[width, height];//구슬 세팅
         SetUp();//타일 배치
-        m_resetBtn = makeResetBtn();
+        //m_resetBtn = makeResetBtn();
 
     }
 
@@ -115,8 +119,9 @@ public class Board : MonoBehaviour
                 {
                     //위치 조정
                     Vector2 tempPosition = new Vector2(i, j + offSet);
+                    Vector2 tilePosition = new Vector3(i, j, 0.01f);
                     //생성
-                    GameObject backgroundTile = Instantiate(tilePrefab, tempPosition, Quaternion.identity) as GameObject;
+                    GameObject backgroundTile = Instantiate(tilePrefab, tilePosition, Quaternion.identity) as GameObject;
                     backgroundTile.transform.parent = this.transform;
                     backgroundTile.name = string.Format(Define.Vec2Name, i, j);
                     
@@ -327,6 +332,7 @@ public class Board : MonoBehaviour
             Eff.GetComponent<ParticleSystemRenderer>().material = Resources.Load(Define.destroyEffPath[BeadColorIndex(allBeads[_column, _row].tag)]) as Material;
             Destroy(Eff, 1f);
             Destroy(allBeads[_column, _row]);
+            scoreManager.IncreaseScore(basePieceValue * streakValue);
             allBeads[_column, _row] = null;
 
             currentState = GameState.move;
@@ -461,6 +467,7 @@ public class Board : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         while(MatchesOnBoard())
         {
+            streakValue++;
             yield return new WaitForSeconds(0.5f);
             DestroyMatches();
         }
@@ -483,6 +490,7 @@ public class Board : MonoBehaviour
         //}
         //Debug.Log(string.Format("remainder match : {0}", remainderMatch));
         currentState = GameState.move;
+        streakValue = 1;
     }
 
     private void SwitchPieces(int _column, int _row, Vector2 _direction)
@@ -533,7 +541,7 @@ public class Board : MonoBehaviour
         return false;
     }
 
-    private bool SwitchAndCheck(int _column, int _row, Vector2 _direction)
+    public bool SwitchAndCheck(int _column, int _row, Vector2 _direction)
     {
         SwitchPieces(_column, _row, _direction);
         if(CheckForMatches())

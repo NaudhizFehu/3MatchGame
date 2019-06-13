@@ -30,7 +30,7 @@ public class Bead : MonoBehaviour
     public int targetY;
     public bool isMatched = false;
 
-
+    private HintManager hintManager;
     private FindMatches findMatches;
     private Board board;
     public GameObject otherBead;
@@ -69,6 +69,7 @@ public class Bead : MonoBehaviour
 
         direction = BeadMoveDirection.None;
 
+        hintManager = FindObjectOfType<HintManager>();
         board = FindObjectOfType<Board>();
         findMatches = FindObjectOfType<FindMatches>();
         //targetX = (int)transform.position.x;
@@ -236,6 +237,11 @@ public class Bead : MonoBehaviour
 
     private void OnMouseDown()
     {
+        //Destory the hint
+        if(hintManager != null)
+        {
+            hintManager.DestroyHint();
+        }
         if(board.currentState == GameState.move)
         {
             firstTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
