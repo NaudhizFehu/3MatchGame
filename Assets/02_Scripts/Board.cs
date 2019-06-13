@@ -8,6 +8,21 @@ public enum GameState
     move,
 }
 
+public enum TileKind
+{
+    Breakable,
+    Blank,
+    Normal,
+
+}
+[System.Serializable]
+public class TileType
+{
+    public int x;
+    public int y;
+    public TileKind tileKind;
+}
+
 public class Board : MonoBehaviour
 {
     public GameState currentState = GameState.move;
@@ -15,7 +30,10 @@ public class Board : MonoBehaviour
     public int height;//세로 갯수
     public int offSet;
     public GameObject tilePrefab;//타일 프리펩
-    private BackgroundTile[,] allTiles;//타일수
+    public GameObject breakableTilePrefab;
+    public TileType[] boardLayout;
+    private bool[,] blankSpaces;
+    private BackgroundTile[,] breakableTiles;
     public GameObject[] beads;
     public GameObject destroyEffect;
     public GameObject[,] allBeads;
@@ -28,8 +46,9 @@ public class Board : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        breakableTiles = new BackgroundTile[width, height];
         findMatches = FindObjectOfType<FindMatches>();
-        allTiles = new BackgroundTile[width, height];//타일 세팅
+        blankSpaces = new bool[width, height];//타일 세팅
         allBeads = new GameObject[width, height];//구슬 세팅
         SetUp();//타일 배치
         m_resetBtn = makeResetBtn();
@@ -51,26 +70,60 @@ public class Board : MonoBehaviour
         btn.transform.localPosition = new Vector3(3f, -1.5f, 0f);
         return btn.GetComponent<ResetBtn>();
     }
+
+    //비어있는 타일 생성
+    public void GenerateBlankSpaces()
+    {
+        for(int i = 0; i < boardLayout.Length; i++)
+        {
+            if(boardLayout[i].tileKind == TileKind.Blank)
+            {
+                blankSpaces[boardLayout[i].x, boardLayout[i].y] = true;
+            }
+        }
+    }
+
+    //젤리포장지 타일 생성
+    public void GenerateBreakableTiles()
+    {
+        //Look at all the tiles in the layout
+        for(int i = 0; i < boardLayout.Length; i++)
+        {
+            //if a tile is a "Jelly" tile
+            if(boardLayout[i].tileKind == TileKind.Breakable)
+            {
+                //Create a "Jelly" tile t that position;
+                Vector3 tempPosition = new Vector3(boardLayout[i].x, boardLayout[i].y, 0.1f);
+                GameObject tile = Instantiate(breakableTilePrefab, tempPosition, Quaternion.identity);
+                breakableTiles[boardLayout[i].x, boardLayout[i].y] = tile.GetComponent<BackgroundTile>();
+            }
+        }
+    }
     
     //타일 배치
     private void SetUp()
     {
+        GenerateBlankSpaces();
+        GenerateBreakableTiles();
         //가로 세팅
         for (int i = 0; i < width; i++)
         {
             //세로 세팅
             for(int j = 0; j < height; j++)
             {
-                //위치 조정
-                Vector2 tempPosition = new Vector2(i, j + offSet);
-                //생성
-                GameObject backgroundTile = Instantiate(tilePrefab, tempPosition, Quaternion.identity) as GameObject;
-                backgroundTile.transform.parent = this.transform;
-                backgroundTile.name = string.Format(Define.Vec2Name, i, j);
-                
+                if(!blankSpaces[i, j])
+                {
+                    //위치 조정
+                    Vector2 tempPosition = new Vector2(i, j + offSet);
+                    //생성
+                    GameObject backgroundTile = Instantiate(tilePrefab, tempPosition, Quaternion.identity) as GameObject;
+                    backgroundTile.transform.parent = this.transform;
+                    backgroundTile.name = string.Format(Define.Vec2Name, i, j);
+                    
 
-                //구슬을 생성하고 배치한다.
-                makeBeadSetup(i, j, tempPosition);
+                    //구슬을 생성하고 배치한다.
+                    makeBeadSetup(i, j, tempPosition);
+                }
             }
         }
     }
@@ -101,29 +154,41 @@ public class Board : MonoBehaviour
     {
         if(_column > 1 && _row > 1)
         {
-            if(allBeads[_column - 1, _row].tag == _piece.tag && allBeads[_column - 2, _row].tag == _piece.tag)
+            if(allBeads[_column - 1, _row] != null && allBeads[_column - 2, _row] != null)
             {
-                return true;
+                if(allBeads[_column - 1, _row].tag == _piece.tag && allBeads[_column - 2, _row].tag == _piece.tag)
+                {
+                    return true;
+                }
             }
-            if (allBeads[_column, _row - 1].tag == _piece.tag && allBeads[_column, _row - 2].tag == _piece.tag)
+            if (allBeads[_column, _row - 1] != null && allBeads[_column, _row - 2] != null)
             {
-                return true;
+                if (allBeads[_column, _row - 1].tag == _piece.tag && allBeads[_column, _row - 2].tag == _piece.tag)
+                {
+                    return true;
+                }
             }
         }
         else if(_column <= 1 || _row <= 1)
         {
             if (_column > 1)
             {
-                if (allBeads[_column - 1, _row].tag == _piece.tag && allBeads[_column - 2, _row].tag == _piece.tag)
+                if(allBeads[_column - 1, _row] != null && allBeads[_column - 2, _row] != null)
                 {
-                    return true;
+                    if (allBeads[_column - 1, _row].tag == _piece.tag && allBeads[_column - 2, _row].tag == _piece.tag)
+                    {
+                        return true;
+                    }
                 }
             }
             if (_row > 1)
             {
-                if(allBeads[_column, _row - 1].tag == _piece.tag && allBeads[_column, _row - 2].tag == _piece.tag)
+                if(allBeads[_column, _row - 1] != null && allBeads[_column, _row - 2] != null)
                 {
-                    return true;
+                    if(allBeads[_column, _row - 1].tag == _piece.tag && allBeads[_column, _row - 2].tag == _piece.tag)
+                    {
+                        return true;
+                    }
                 }
             }
         }
@@ -235,32 +300,31 @@ public class Board : MonoBehaviour
     {
         if(allBeads[_column, _row].GetComponent<Bead>().isMatched)
         {
-            //How many elements ard in the matched pieces list from findmatches?
-            //var enumerator = findMatches.Dic_currentMatches.GetEnumerator();
-            //while (enumerator.MoveNext())
-            //{
-            //    if (enumerator.Current.Value.Count == 4 || enumerator.Current.Value.Count == 7)
-            //    {
-            //        findMatches.CheckBombs();
-            //    }
-            //    enumerator.Current.Value.Clear();
-            //}
+            currentState = GameState.wait;
 
             if(findMatches.currentMatches.Count >= 4)
             {
                 CheckToMakeBombs();
             }
 
-            //if (findMatches.currentMatches.Count == 5 || findMatches.currentMatches.Count == 8)
-            //{
-            //    findMatches.CheckBombs();
-            //}
+            //Does a tile need to break?
+            if(breakableTiles[_column, _row] != null)
+            {
+                //if it does, give one damage
+                breakableTiles[_column, _row].TakeDamage(1);
+                if(breakableTiles[_column, _row].hitPoints <= 0)
+                {
+                    breakableTiles[_column, _row] = null;
+                }
+            }
 
             GameObject Eff = Instantiate(destroyEffect, allBeads[_column, _row].transform.position + Define.FrontPos, Quaternion.identity);
             Eff.GetComponent<ParticleSystemRenderer>().material = Resources.Load(Define.destroyEffPath[BeadColorIndex(allBeads[_column, _row].tag)]) as Material;
             Destroy(Eff, 1f);
             Destroy(allBeads[_column, _row]);
             allBeads[_column, _row] = null;
+
+            currentState = GameState.move;
         }
     }
 
@@ -290,7 +354,37 @@ public class Board : MonoBehaviour
             }
         }
         findMatches.currentMatches.Clear();
-        StartCoroutine(DecreaseRowCo());
+        StartCoroutine(DecreaseRowCo2());
+    }
+
+    private IEnumerator DecreaseRowCo2()
+    {
+        for(int i = 0; i < width; i++)
+        {
+            for(int j = 0; j < height; j++)
+            {
+                //if the current spot isn't blank or empty
+                if(!blankSpaces[i, j] && allBeads[i,j] == null)
+                {
+                    //loop from the space above to the top of the column.
+                    for(int k = j + 1; k < height; k++)
+                    {
+                        //if a bead is found
+                        if(allBeads[i, k] != null)
+                        {
+                            //move that bead to this empty space
+                            allBeads[i, k].GetComponent<Bead>().row = j;
+                            //get that spot to be null
+                            allBeads[i, k] = null;
+                            //break out of the loop
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        yield return new WaitForSeconds(0.1f);
+        StartCoroutine(FillBoardCo());
     }
 
     //매치가되어 구슬이 사라졌다면 새로운 구슬을 재배치한다.
@@ -323,7 +417,7 @@ public class Board : MonoBehaviour
         {
             for(int j = 0; j < height; j++)
             {
-                if(allBeads[i, j] == null)
+                if(allBeads[i, j] == null && !blankSpaces[i, j])
                 {
                     Vector2 tempPosition = new Vector2(i, j + offSet);
                     int beadToUse = Random.Range(0, beads.Length);
@@ -359,10 +453,10 @@ public class Board : MonoBehaviour
     private IEnumerator FillBoardCo()
     {
         RefillBoard();
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.3f);
         while(MatchesOnBoard())
         {
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0.3f);
             DestroyMatches();
         }
         findMatches.currentMatches.Clear();
@@ -371,7 +465,10 @@ public class Board : MonoBehaviour
         currentState = GameState.move;
     }
 
-
+    private void SwitchPieces(int _column, int row, Vector2 _direction)
+    {
+        //Take the first piece and save it in a holder
+    }
 
     //TestCode
     public void Resetbead()
@@ -387,12 +484,23 @@ public class Board : MonoBehaviour
         }
 
         //재세팅
+        GenerateBlankSpaces();
+        GenerateBreakableTiles();
+        //가로 세팅
         for (int i = 0; i < width; i++)
         {
+            //세로 세팅
             for (int j = 0; j < height; j++)
             {
-                Vector2 tempPosition = new Vector2(i, j + offSet);
-                makeBeadSetup(i, j, tempPosition);
+                if (!blankSpaces[i, j])
+                {
+                    //위치 조정
+                    Vector2 tempPosition = new Vector2(i, j + offSet);
+
+
+                    //구슬을 생성하고 배치한다.
+                    makeBeadSetup(i, j, tempPosition);
+                }
             }
         }
     }

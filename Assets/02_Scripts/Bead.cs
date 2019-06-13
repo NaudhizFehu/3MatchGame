@@ -210,7 +210,7 @@ public class Bead : MonoBehaviour
             findMatches.MatchPiecesOfColor(this.gameObject.tag);
             otherBead.GetComponent<Bead>().isMatched = true;
         }
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.3f);
         if(otherBead != null)
         {
             //매칭이 되지않았다면 이전 위치로 되돌린다.
@@ -221,8 +221,6 @@ public class Bead : MonoBehaviour
                 column = previousColumn;
                 row = previousRow;
                 yield return new WaitForSeconds(0.5f);
-                direction = BeadMoveDirection.None;
-                otherBead.GetComponent<Bead>().direction = BeadMoveDirection.None;
                 board.currentBead = null;
                 board.currentState = GameState.move;
             }
@@ -275,11 +273,18 @@ public class Bead : MonoBehaviour
         otherBead = board.allBeads[column + (int)_direction.x, row + (int)_direction.y];
         previousColumn = column;
         previousRow = row;
-        otherBead.GetComponent<Bead>().column += -1 * (int)_direction.x;
-        otherBead.GetComponent<Bead>().row += -1 * (int)_direction.y;
-        column += (int)_direction.x;
-        row += (int)_direction.y;
-        StartCoroutine(CheckMoveCo());
+        if(otherBead != null)
+        {
+            otherBead.GetComponent<Bead>().column += -1 * (int)_direction.x;
+            otherBead.GetComponent<Bead>().row += -1 * (int)_direction.y;
+            column += (int)_direction.x;
+            row += (int)_direction.y;
+            StartCoroutine(CheckMoveCo());
+        }
+        else
+        {
+            board.currentState = GameState.move;
+        }
     }
 
     private void MovePieces()

@@ -185,8 +185,11 @@ public class FindMatches : MonoBehaviour
             {
                 if(i >= 0 && i < board.width && j >= 0 && j < board.height)
                 {
-                    beads.Add(board.allBeads[i, j]);
-                    GetBeadComponent(board.allBeads[i, j]).isMatched = true;
+                    if(board.allBeads[i, j] != null)
+                    {
+                        beads.Add(board.allBeads[i, j]);
+                        GetBeadComponent(board.allBeads[i, j]).isMatched = true;
+                    }
                 }
             }
         }
