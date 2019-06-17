@@ -42,7 +42,9 @@ public class Board : MonoBehaviour
     public int basePieceValue = 20;
     private int streakValue = 1;
     private ScoreManager scoreManager;
+    private SoundManager soundManager;
     public float refillDelay = 0.5f;
+    public int[] scoreGoals;
 
     //test
     private ResetBtn m_resetBtn;
@@ -50,6 +52,7 @@ public class Board : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        soundManager = FindObjectOfType<SoundManager>();
         scoreManager = FindObjectOfType<ScoreManager>();
         breakableTiles = new BackgroundTile[width, height];
         findMatches = FindObjectOfType<FindMatches>();
@@ -327,6 +330,12 @@ public class Board : MonoBehaviour
                 {
                     breakableTiles[_column, _row] = null;
                 }
+            }
+
+            //Does the sound manager exist?
+            if(soundManager != null)
+            {
+                soundManager.PlayRandomDestoryNoise();
             }
 
             GameObject Eff = Instantiate(destroyEffect, allBeads[_column, _row].transform.position + Define.FrontPos, Quaternion.identity);
