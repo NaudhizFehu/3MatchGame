@@ -12,7 +12,7 @@ TagManager:
   - PurpleGlassBead
   - RedGlassBead
   - YellowGlassBead
-  - NonNormalBead
+  - Color
   layers:
   - Default
   - TransparentFX

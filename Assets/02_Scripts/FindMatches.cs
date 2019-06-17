@@ -81,7 +81,7 @@ public class FindMatches : MonoBehaviour
 
     private void AddToListAndMatch(GameObject _bead)
     {
-        if(_bead.tag != "NonNormalBead")
+        if(_bead.tag != "Color")
         {
             if (!currentMatches.Contains(_bead))
             {
@@ -187,6 +187,16 @@ public class FindMatches : MonoBehaviour
                 {
                     if(board.allBeads[i, j] != null)
                     {
+                        Bead bead = board.allBeads[i, j].GetComponent<Bead>();
+                        if (bead.isColumnBomb)
+                        {
+                            beads.Union(GetColumnPieces(i)).ToList();
+                        }
+                        if (bead.isRowBomb)
+                        {
+                            beads.Union(GetRowPieces(j)).ToList();
+                        }
+
                         beads.Add(board.allBeads[i, j]);
                         GetBeadComponent(board.allBeads[i, j]).isMatched = true;
                     }
@@ -203,6 +213,16 @@ public class FindMatches : MonoBehaviour
         {
             if(board.allBeads[_column, i] != null)
             {
+                Bead bead = board.allBeads[_column, i].GetComponent<Bead>();
+                if(bead.isRowBomb)
+                {
+                    beads.Union(GetRowPieces(i)).ToList();
+                }
+                if (bead.isAdjacentBomb)
+                {
+                    beads.Union(GetAdjacentPieces(bead.column, bead.row)).ToList();
+                }
+
                 beads.Add(board.allBeads[_column, i]);
                 GetBeadComponent(board.allBeads[_column, i]).isMatched = true;
             }
@@ -217,6 +237,16 @@ public class FindMatches : MonoBehaviour
         {
             if (board.allBeads[i, _row] != null)
             {
+                Bead bead = board.allBeads[i, _row].GetComponent<Bead>();
+                if (bead.isColumnBomb)
+                {
+                    beads.Union(GetColumnPieces(i)).ToList();
+                }
+                if (bead.isAdjacentBomb)
+                {
+                    beads.Union(GetAdjacentPieces(bead.column, bead.row)).ToList();
+                }
+
                 beads.Add(board.allBeads[i, _row]);
                 GetBeadComponent(board.allBeads[i, _row]).isMatched = true;
             }

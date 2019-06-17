@@ -42,6 +42,7 @@ public class Board : MonoBehaviour
     public int basePieceValue = 20;
     private int streakValue = 1;
     private ScoreManager scoreManager;
+    public float refillDelay = 0.5f;
 
     //test
     private ResetBtn m_resetBtn;
@@ -394,7 +395,7 @@ public class Board : MonoBehaviour
                 }
             }
         }
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(refillDelay * 0.5f);
         StartCoroutine(FillBoardCo());
     }
 
@@ -418,7 +419,7 @@ public class Board : MonoBehaviour
             }
             nullCount = 0;
         }
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(refillDelay * 0.5f);
         StartCoroutine(FillBoardCo());
     }
 
@@ -432,6 +433,14 @@ public class Board : MonoBehaviour
                 {
                     Vector2 tempPosition = new Vector2(i, j + offSet);
                     int beadToUse = Random.Range(0, beads.Length);
+                    int maxIterations = 0;
+                    while(MatchesAt(i, j, beads[beadToUse]) && maxIterations < 100)
+                    {
+                        maxIterations++;
+                        beadToUse = Random.Range(0, beads.Length);
+                    }
+                    maxIterations = 0;
+
                     GameObject piece = Instantiate(beads[beadToUse], tempPosition, Quaternion.identity);
                     piece.GetComponent<Bead>().column = i;
                     piece.GetComponent<Bead>().row = j;
@@ -464,16 +473,15 @@ public class Board : MonoBehaviour
     private IEnumerator FillBoardCo()
     {
         RefillBoard();
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(refillDelay);
         while(MatchesOnBoard())
         {
             streakValue++;
-            yield return new WaitForSeconds(0.5f);
             DestroyMatches();
+            yield return new WaitForSeconds(2 * refillDelay);
         }
         findMatches.currentMatches.Clear();
         currentBead = null;
-        yield return new WaitForSeconds(0.5f);
 
         if (isDeadlocked())
         {
@@ -481,6 +489,7 @@ public class Board : MonoBehaviour
             string str = "<color=red>Deadlocked!!!</color>";
             Debug.Log(str);
         }
+        yield return new WaitForSeconds(refillDelay);
 
         //매칭이 가능한 갯수 표기
         //int remainderMatch = isDeadlocked();

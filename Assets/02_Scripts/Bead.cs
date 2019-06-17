@@ -397,7 +397,7 @@ public class Bead : MonoBehaviour
             case BombType.Color:
                 isColorBomb = true;
                 createBombObj = colorBomb;
-                this.tag = "NonNormalBead";
+                this.tag = "Color";
                 break;
 
             case BombType.Adjacent:
