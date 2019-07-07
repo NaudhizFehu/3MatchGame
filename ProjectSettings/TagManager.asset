@@ -13,6 +13,9 @@ TagManager:
   - RedGlassBead
   - YellowGlassBead
   - Color
+  - BreakableTile
+  - Board
+  - LockTile
   layers:
   - Default
   - TransparentFX

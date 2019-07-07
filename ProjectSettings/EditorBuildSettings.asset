@@ -8,4 +8,10 @@ EditorBuildSettings:
   - enabled: 0
     path: 
     guid: 00000000000000000000000000000000
+  - enabled: 1
+    path: Assets/00_Scenes/Splash.unity
+    guid: 92caa43335845864b830246d560359b5
+  - enabled: 1
+    path: Assets/00_Scenes/Main.unity
+    guid: c223d9186cc50224c9daff39bf91d4bd
   m_configObjects: {}

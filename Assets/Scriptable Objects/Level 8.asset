@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82297de6567fdcd4695900cbba0459df, type: 3}
+  m_Name: Level 8
+  m_EditorClassIdentifier: 
+  width: 5
+  height: 5
+  boardLayout:
+  - x: 0
+    y: 0
+    tileKind: 4
+  - x: 6
+    y: 6
+    tileKind: 4
+  - x: 6
+    y: 0
+    tileKind: 4
+  - x: 0
+    y: 6
+    tileKind: 4
+  - x: 3
+    y: 3
+    tileKind: 1
+  beads:
+  - {fileID: 6226497908887478945, guid: cbb46dd15ab34c64cbd6275957783302, type: 3}
+  - {fileID: 5699286196061386284, guid: 9b736949a1327af4f99232ef9b033671, type: 3}
+  - {fileID: 6344553330724717728, guid: de66cd8b30684a94c88461b9656f42cc, type: 3}
+  - {fileID: 2635392914816838458, guid: 7d99171ca598dad4fbe839db5c5fc03a, type: 3}
+  scoreGoals: 64000000c80000002c010000
+  endGameRequirements:
+    gameType: 0
+    counterValue: 35
+  levelGoals:
+  - numberNeeded: 20
+    numberCollected: 10
+    goalSprite: {fileID: 21300000, guid: 30e1604e78157e743af11a6c80b932ce, type: 3}
+    matchValue: BlueGlassBead
