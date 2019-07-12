@@ -123,6 +123,7 @@ public class Board : MonoBehaviour
         concreteTiles = new BackgroundTile[width, height];
         slimeTiles = new BackgroundTile[width, height];
         SetUp();//타일 배치
+        currentState = GameState.pause;
     }
 
     //비어있는 타일 생성
@@ -231,11 +232,6 @@ public class Board : MonoBehaviour
                     makeBeadSetup(i, j, tempPosition);
                 }
             }
-        }
-
-        if(isDeadlocked())
-        {
-            ShuffleBoard();
         }
     }
 
@@ -450,15 +446,12 @@ public class Board : MonoBehaviour
     {
         for (int i = 0; i < width; i++)
         {
-            for(int j = 0; j < height; j++)
+            if (concreteTiles[_column, i])
             {
-                if (concreteTiles[i, i])
+                concreteTiles[_column, i].TakeDamage(1);
+                if (concreteTiles[_column, i].hitPoints <= 0)
                 {
-                    concreteTiles[_column, i].TakeDamage(1);
-                    if (concreteTiles[_column, i].hitPoints <= 0)
-                    {
-                        concreteTiles[_column, i] = null;
-                    }
+                    concreteTiles[_column, i] = null;
                 }
             }
         }
@@ -790,6 +783,7 @@ public class Board : MonoBehaviour
                 {
                     //Call another method to make a new slime
                     MakeNewSlime();
+                    return;
                 }
             }
         }
@@ -820,11 +814,11 @@ public class Board : MonoBehaviour
     {
         bool isslime = false;
         int loops = 0;
-        while(!isslime && loops < (width * height))
+        while(!isslime && loops < 200)
         {
-            int newX = Random.Range(1, width-1);
-            int newY = Random.Range(1, height-1);
-            if(slimeTiles[newX, newY])
+            int newX = Random.Range(0, width);
+            int newY = Random.Range(0, height);
+            if(slimeTiles[newX, newY] != null)
             {
                 Vector2 adjacent = CheckForAdjacent(newX, newY);
                 if(adjacent != Vector2.zero)
@@ -842,12 +836,15 @@ public class Board : MonoBehaviour
 
     private void SwitchPieces(int _column, int _row, Vector2 _direction)
     {
-        //Take the second piece and save it in a holder
-        GameObject holder = allBeads[_column + (int)_direction.x, _row + (int)_direction.y] as GameObject;
-        //switching the first bead to be the second position
-        allBeads[_column + (int)_direction.x, _row + (int)_direction.y] = allBeads[_column, _row];
-        //Set the first bead to be the second bead
-        allBeads[_column, _row] = holder;
+        if(allBeads[_column + (int)_direction.x, _row + (int)_direction.y] != null)
+        {
+            //Take the second piece and save it in a holder
+            GameObject holder = allBeads[_column + (int)_direction.x, _row + (int)_direction.y] as GameObject;
+            //switching the first bead to be the second position
+            allBeads[_column + (int)_direction.x, _row + (int)_direction.y] = allBeads[_column, _row];
+            //Set the first bead to be the second bead
+            allBeads[_column, _row] = holder;
+        }
     }
 
     private bool CheckForMatches()
@@ -892,16 +889,13 @@ public class Board : MonoBehaviour
 
     public bool SwitchAndCheck(int _column, int _row, Vector2 _direction)
     {
-        if(!blankSpaces[_column,_row] || !concreteTiles[_column,_row] || !slimeTiles[_column,_row])
+        SwitchPieces(_column, _row, _direction);
+        if(CheckForMatches())
         {
             SwitchPieces(_column, _row, _direction);
-            if(CheckForMatches())
-            {
-                SwitchPieces(_column, _row, _direction);
-                return true;
-            }
-            SwitchPieces(_column, _row, _direction);
+            return true;
         }
+        SwitchPieces(_column, _row, _direction);
         return false;
     }
 
@@ -987,7 +981,7 @@ public class Board : MonoBehaviour
         //Check if it's still deadlocked
         if(isDeadlocked())
         {
-            ShuffleBoard();
+            StartCoroutine(ShuffleBoard());
         }
     }
 
