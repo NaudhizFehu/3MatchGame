@@ -65,6 +65,7 @@ public class GameData : MonoBehaviour
             FileStream file = File.Open(Application.persistentDataPath + "/player.dat", FileMode.Open);
             saveData = formatter.Deserialize(file) as SaveData;
             file.Close();
+            GameStartManager.instance.PlayGame();
             print("Loaded");
         }
     }

@@ -25,6 +25,7 @@ public class ScoreManager : MonoBehaviour
     public int score;
     public Image scoreBar;
     private GameData gameData;
+    private int numberStars;
 
     // Start is called before the first frame update
     void Start()
@@ -43,6 +44,13 @@ public class ScoreManager : MonoBehaviour
     public void IncreaseScore(int _amountToIncrease)
     {
         score += _amountToIncrease;
+        for(int i = 0; i < board.scoreGoals.Length; i++)
+        {
+            if(score > board.scoreGoals[i] && numberStars < i + 1)
+            {
+                numberStars++;
+            }
+        }
         if(gameData != null)
         {
             int highScore = gameData.saveData.highScores[board.level];
@@ -51,29 +59,13 @@ public class ScoreManager : MonoBehaviour
                 gameData.saveData.highScores[board.level] = score;
             }
 
-            int stars = 0;
-            if(score >= board.scoreGoals[2])
+            int currentStars = gameData.saveData.stars[board.level];
+            if(numberStars > currentStars)
             {
-                stars = 3;
-            }
-            else if(score >= board.scoreGoals[1])
-            {
-                stars = 2;
-            }
-            else if(score >= board.scoreGoals[0])
-            {
-                stars = 1;
-            }
-            else
-            {
-                stars = 0;
+                gameData.saveData.stars[board.level] = numberStars;
             }
 
-            if(stars > gameData.saveData.stars[board.level])
-            {
-                gameData.saveData.stars[board.level] = stars;
-            }
-
+            gameData.Save();
         }
         UpdataBar();
     }

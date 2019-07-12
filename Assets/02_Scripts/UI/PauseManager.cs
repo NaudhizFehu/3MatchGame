@@ -76,17 +76,20 @@ public class PauseManager : MonoBehaviour
             {
                 soundButton.sprite = musicOnSprite;
                 PlayerPrefs.SetInt("Sound", 1);
+                SoundManager.instance.adjustVolume();
             }
             else
             {
                 soundButton.sprite = musicOffSprite;
                 PlayerPrefs.SetInt("Sound", 0);
+                SoundManager.instance.adjustVolume();
             }
         }
         else
         {
             soundButton.sprite = musicOffSprite;
             PlayerPrefs.SetInt("Sound", 0);
+            SoundManager.instance.adjustVolume();
         }
     }
 

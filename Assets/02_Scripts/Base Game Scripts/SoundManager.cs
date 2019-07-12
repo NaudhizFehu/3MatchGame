@@ -22,7 +22,7 @@ public class SoundManager : MonoBehaviour
 
     public AudioSource[] destroyNoise;
 
-    public AudioSource BGM;
+    public AudioSource backgroundMusic;
 
     public void PlayRandomDestoryNoise()
     {
@@ -45,8 +45,36 @@ public class SoundManager : MonoBehaviour
         }
     }
 
-    public void playBGM()
+    private void Start()
     {
-        BGM.Play();
+        if(PlayerPrefs.HasKey("Sound"))
+        {
+            if (PlayerPrefs.GetInt("Sound") == 0)
+            {
+                backgroundMusic.Play();
+                backgroundMusic.volume = 0;
+            }
+            else
+            {
+                backgroundMusic.Play();
+                backgroundMusic.volume = 1;
+            }
+        }
+        else
+        {
+            backgroundMusic.Play();
+            backgroundMusic.volume = 1;
+        }
+    }
+
+    public void adjustVolume()
+    {
+        if (PlayerPrefs.HasKey("Sound"))
+        {
+            if (PlayerPrefs.GetInt("Sound") == 0)
+                backgroundMusic.Stop();
+            else
+                backgroundMusic.Play();
+        }
     }
 }

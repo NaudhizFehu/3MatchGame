@@ -93,19 +93,22 @@ public class Board : MonoBehaviour
         }
         if(world != null)
         {
-            if(Mathf.Abs(level) < world.levels.Length && world.levels[level] != null)
+            if(level < world.levels.Length)
             {
-                width = world.levels[level].width;
-                height = world.levels[level].height;
+                if(world.levels[level] != null)
+                {
+                    width = world.levels[level].width;
+                    height = world.levels[level].height;
 
-                boardLayout = world.levels[level].boardLayout;
-                beads = world.levels[level].beads;
-                scoreGoals = world.levels[level].scoreGoals;
+                    boardLayout = world.levels[level].boardLayout;
+                    beads = world.levels[level].beads;
+                    scoreGoals = world.levels[level].scoreGoals;
 
-                GoalManager.instance.levelGoals = world.levels[level].levelGoals;
-                GoalManager.instance.ResetNumberCollected();
+                    GoalManager.instance.levelGoals = world.levels[level].levelGoals;
+                    GoalManager.instance.ResetNumberCollected();
 
-                EndGameManager.instance.requirements = world.levels[level].endGameRequirements;
+                    EndGameManager.instance.requirements = world.levels[level].endGameRequirements;
+                }
             }
         }
     }
@@ -120,16 +123,6 @@ public class Board : MonoBehaviour
         concreteTiles = new BackgroundTile[width, height];
         slimeTiles = new BackgroundTile[width, height];
         SetUp();//타일 배치
-    }
-
-    
-
-    private ResetBtn makeResetBtn()
-    {
-        GameObject btn = Instantiate(Resources.Load(string.Format("02_Prefabs/03_UI/ResetBtn"))) as GameObject;
-        btn.transform.parent = this.transform;
-        btn.transform.localPosition = new Vector3(3f, -1.5f, 0f);
-        return btn.GetComponent<ResetBtn>();
     }
 
     //비어있는 타일 생성
@@ -455,14 +448,17 @@ public class Board : MonoBehaviour
 
     private void BombColumn(int _column)
     {
-        for (int i = 0; i < height; i++)
+        for (int i = 0; i < width; i++)
         {
-            if (concreteTiles[_column, i])
+            for(int j = 0; j < height; j++)
             {
-                concreteTiles[_column, i].TakeDamage(1);
-                if (concreteTiles[_column, i].hitPoints <= 0)
+                if (concreteTiles[i, i])
                 {
-                    concreteTiles[_column, i] = null;
+                    concreteTiles[_column, i].TakeDamage(1);
+                    if (concreteTiles[_column, i].hitPoints <= 0)
+                    {
+                        concreteTiles[_column, i] = null;
+                    }
                 }
             }
         }
@@ -473,8 +469,6 @@ public class Board : MonoBehaviour
     {
         if(allBeads[_column, _row].GetComponent<Bead>().isMatched)
         {
-            currentState = GameState.wait;
-
             //Does a tile need to break?
             if(breakableTiles[_column, _row] != null)
             {
@@ -509,8 +503,6 @@ public class Board : MonoBehaviour
             Destroy(allBeads[_column, _row]);
             ScoreManager.instance.IncreaseScore(basePieceValue * streakValue);
             allBeads[_column, _row] = null;
-
-            currentState = GameState.move;
         }
     }
 
@@ -721,11 +713,11 @@ public class Board : MonoBehaviour
                     maxIterations = 0;
 
                     GameObject piece = Instantiate(beads[beadToUse], tempPosition, Quaternion.identity);
+                    allBeads[i, j] = piece;
                     piece.GetComponent<Bead>().column = i;
                     piece.GetComponent<Bead>().row = j;
-                    piece.transform.parent = this.transform;
-                    piece.name = string.Format(Define.Vec2Name, i, j);
-                    allBeads[i, j] = piece;
+                    //piece.transform.parent = this.transform;
+                    //piece.name = string.Format(Define.Vec2Name, i, j);
                 }
             }
         }
@@ -766,9 +758,10 @@ public class Board : MonoBehaviour
         CheckToMakeSlime();
         if (isDeadlocked())
         {
-            ShuffleBoard();
-            string str = "<color=red>Deadlocked!!!</color>";
-            Debug.Log(str);
+            StartCoroutine(ShuffleBoard());
+            //ShuffleBoard();
+            //string str = "<color=red>Deadlocked!!!</color>";
+            //Debug.Log(str);
         }
         yield return new WaitForSeconds(refillDelay);
 
